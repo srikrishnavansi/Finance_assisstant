@@ -3,8 +3,8 @@ import base64
 import pandas as pd
 import plotly.express as px
 from audio_recorder_streamlit import audio_recorder
-from streamlit_app.utils import process_text_query, process_voice_query
-from streamlit_app.audio_utils import ensure_wav_format
+from utils import process_text_query, process_voice_query
+from audio_utils import ensure_wav_format
 
 # --- Sidebar for API Keys ---
 st.sidebar.header("🔑 Enter API Keys to Start")
