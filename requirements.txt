@@ -16,3 +16,6 @@ plotly
 yfinance
 python-multipart
 audio_recorder_streamlit
+pydub
+pandas
+
