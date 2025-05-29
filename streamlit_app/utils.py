@@ -1,13 +1,9 @@
 import requests
 import base64
 
-# Use your public FastAPI backend URL
 BACKEND_URL = "https://finance-assisstant.onrender.com"
 
 def process_text_query(query, gemini_api_key, elevenlabs_api_key, voice_id):
-    """
-    Sends a text query to the FastAPI backend and returns the result.
-    """
     data = {
         "query": query,
         "gemini_api_key": gemini_api_key,
@@ -27,9 +23,6 @@ def process_text_query(query, gemini_api_key, elevenlabs_api_key, voice_id):
     }
 
 def process_voice_query(audio_bytes, gemini_api_key, elevenlabs_api_key, voice_id):
-    """
-    Sends a voice query (audio bytes) to the FastAPI backend and returns the result.
-    """
     files = {"audio": ("voice_query.wav", audio_bytes, "audio/wav")}
     data = {
         "gemini_api_key": gemini_api_key,
