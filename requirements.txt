@@ -13,3 +13,4 @@ google-generativeai
 beautifulsoup4
 feedparser
 plotly
+yfinance
