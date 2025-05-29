@@ -3,8 +3,8 @@ import base64
 import pandas as pd
 import plotly.express as px
 from audio_recorder_streamlit import audio_recorder
-from utils import process_text_query, process_voice_query
-from audio_utils import ensure_wav_format
+from streamlit_app.utils import process_text_query, process_voice_query
+from streamlit_app.audio_utils import ensure_wav_format
 
 # --- Sidebar for API Keys ---
 st.sidebar.header("🔑 Enter API Keys to Start")
@@ -23,7 +23,7 @@ if st.sidebar.button("Submit Keys"):
     st.session_state["GEMINI_API_KEY"] = gemini_key.strip()
     st.session_state["ELEVENLABS_API_KEY"] = elevenlabs_key.strip()
     st.session_state["ELEVENLABS_VOICE_ID"] = voice_id.strip()
-    st.rerun()
+    st.success("API keys updated! You can now use the app.")
 
 if st.session_state["GEMINI_API_KEY"] and st.session_state["ELEVENLABS_API_KEY"]:
     # --- Session State Initialization ---
@@ -34,7 +34,9 @@ if st.session_state["GEMINI_API_KEY"] and st.session_state["ELEVENLABS_API_KEY"]
         "response_audio": None,
         "data_insights": None,
         "plan": [],
-        "recording_complete": False
+        "recording_complete": False,
+        "last_audio_result": None,
+        "last_text_result": None,
     }.items():
         if key not in st.session_state:
             st.session_state[key] = value
@@ -61,39 +63,37 @@ if st.session_state["GEMINI_API_KEY"] and st.session_state["ELEVENLABS_API_KEY"]
         )
 
         min_audio_length = 2000  # bytes, adjust as needed
-        if audio_bytes and len(audio_bytes) > min_audio_length and not st.session_state.recording_complete:
+
+        # Show playback of current recording
+        if audio_bytes and len(audio_bytes) > min_audio_length:
             st.session_state.audio_bytes = audio_bytes
-            st.session_state.recording_complete = True
             st.success("Recording complete! Listen to your recording below.")
             st.markdown("### 🎵 Your Recording")
             st.audio(audio_bytes, format="audio/wav")
-        elif not audio_bytes or (audio_bytes and len(audio_bytes) <= min_audio_length):
-            st.session_state.recording_complete = False
 
-        if st.session_state.audio_bytes and not st.session_state.processing:
-            if st.button("Analyze", key="analyze_voice"):
-                st.session_state.processing = True
-                with st.spinner("Analyzing your voice query..."):
-                    processed_audio = ensure_wav_format(st.session_state.audio_bytes)
-                    result = process_voice_query(
-                        processed_audio,
-                        st.session_state["GEMINI_API_KEY"],
-                        st.session_state["ELEVENLABS_API_KEY"],
-                        st.session_state["ELEVENLABS_VOICE_ID"]
-                    )
-                    st.session_state.response_text = result["text"]
-                    st.session_state.response_audio = result["audio_bytes"]
-                    st.session_state.data_insights = result.get("data", {})
-                    st.session_state.plan = result.get("plan", [])
-                st.session_state.processing = False
-                st.session_state.audio_bytes = None
-                st.session_state.recording_complete = False
-                st.rerun()
+        # Analyze button for voice
+        if st.session_state.audio_bytes and st.button("Analyze Voice Query"):
+            st.session_state.processing = True
+            with st.spinner("Analyzing your voice query..."):
+                processed_audio = ensure_wav_format(st.session_state.audio_bytes)
+                result = process_voice_query(
+                    processed_audio,
+                    st.session_state["GEMINI_API_KEY"],
+                    st.session_state["ELEVENLABS_API_KEY"],
+                    st.session_state["ELEVENLABS_VOICE_ID"]
+                )
+                st.session_state.last_audio_result = result
+                st.session_state.response_text = result["text"]
+                st.session_state.response_audio = result["audio_bytes"]
+                st.session_state.data_insights = result.get("data", {})
+                # plan is NOT displayed
+            st.session_state.processing = False
+            st.session_state.audio_bytes = None  # Reset for next recording
 
     with text_tab:
         st.header("Ask your question by text")
         query = st.text_area("Type your financial question here:", height=80)
-        if st.button("Analyze", key="analyze_text") and query:
+        if st.button("Analyze Text Query") and query:
             st.session_state.processing = True
             with st.spinner("Analyzing your text query..."):
                 result = process_text_query(
@@ -102,13 +102,14 @@ if st.session_state["GEMINI_API_KEY"] and st.session_state["ELEVENLABS_API_KEY"]
                     st.session_state["ELEVENLABS_API_KEY"],
                     st.session_state["ELEVENLABS_VOICE_ID"]
                 )
+                st.session_state.last_text_result = result
                 st.session_state.response_text = result["text"]
                 st.session_state.response_audio = result["audio_bytes"]
                 st.session_state.data_insights = result.get("data", {})
-                st.session_state.plan = result.get("plan", [])
+                # plan is NOT displayed
             st.session_state.processing = False
-            st.rerun()
 
+    # Display AI Analysis Report if available
     if st.session_state.response_text:
         st.markdown("---")
         st.subheader("AI Analysis Report")
@@ -132,6 +133,7 @@ if st.session_state["GEMINI_API_KEY"] and st.session_state["ELEVENLABS_API_KEY"]
             """
             st.markdown(audio_html, unsafe_allow_html=True)
 
+    # Display Data Insights if available
     if st.session_state.data_insights:
         st.markdown("---")
         st.subheader("📊 Interactive Data Insights")
