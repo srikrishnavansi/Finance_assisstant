@@ -22,7 +22,7 @@ if st.sidebar.button("Submit Keys"):
     st.session_state["GEMINI_API_KEY"] = gemini_key.strip()
     st.session_state["ELEVENLABS_API_KEY"] = elevenlabs_key.strip()
     st.session_state["ELEVENLABS_VOICE_ID"] = voice_id.strip()
-    st.experimental_rerun()
+    st.rerun()
 
 # --- Only load the app if both keys are present ---
 if st.session_state["GEMINI_API_KEY"] and st.session_state["ELEVENLABS_API_KEY"]:
