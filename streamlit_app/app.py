@@ -34,7 +34,6 @@ if st.session_state["GEMINI_API_KEY"] and st.session_state["ELEVENLABS_API_KEY"]
         "response_audio": None,
         "data_insights": None,
         "plan": [],
-        "recording_complete": False,
         "last_audio_result": None,
         "last_text_result": None,
     }.items():
@@ -86,7 +85,6 @@ if st.session_state["GEMINI_API_KEY"] and st.session_state["ELEVENLABS_API_KEY"]
                 st.session_state.response_text = result["text"]
                 st.session_state.response_audio = result["audio_bytes"]
                 st.session_state.data_insights = result.get("data", {})
-                # plan is NOT displayed
             st.session_state.processing = False
             st.session_state.audio_bytes = None  # Reset for next recording
 
@@ -106,7 +104,6 @@ if st.session_state["GEMINI_API_KEY"] and st.session_state["ELEVENLABS_API_KEY"]
                 st.session_state.response_text = result["text"]
                 st.session_state.response_audio = result["audio_bytes"]
                 st.session_state.data_insights = result.get("data", {})
-                # plan is NOT displayed
             st.session_state.processing = False
 
     # Display AI Analysis Report if available
