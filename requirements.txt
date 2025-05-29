@@ -1,0 +1,15 @@
+streamlit
+fastapi
+uvicorn
+python-dotenv
+requests
+langchain
+langchain-google-genai
+crewai
+faiss-cpu
+newspaper3k
+elevenlabs
+google-generativeai
+beautifulsoup4
+feedparser
+plotly
