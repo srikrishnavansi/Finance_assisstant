@@ -1,8 +1,9 @@
 import streamlit as st
-import os
+import base64
 import pandas as pd
 import plotly.express as px
-import base64
+from audio_recorder_streamlit import audio_recorder
+from streamlit_app.utils import process_text_query, process_voice_query
 
 # --- Sidebar for API Keys ---
 st.sidebar.header("🔑 Enter API Keys to Start")
@@ -21,14 +22,10 @@ if st.sidebar.button("Submit Keys"):
     st.session_state["GEMINI_API_KEY"] = gemini_key.strip()
     st.session_state["ELEVENLABS_API_KEY"] = elevenlabs_key.strip()
     st.session_state["ELEVENLABS_VOICE_ID"] = voice_id.strip()
-    st.rerun()
+    st.experimental_rerun()
 
 # --- Only load the app if both keys are present ---
 if st.session_state["GEMINI_API_KEY"] and st.session_state["ELEVENLABS_API_KEY"]:
-    from audio_recorder_streamlit import audio_recorder
-    from utils import process_text_query, process_voice_query
-    from audio_utils import ensure_wav_format
-
     # --- Session State Initialization ---
     for key, value in {
         "audio_bytes": None,
@@ -77,9 +74,8 @@ if st.session_state["GEMINI_API_KEY"] and st.session_state["ELEVENLABS_API_KEY"]
             if st.button("Analyze", key="analyze_voice"):
                 st.session_state.processing = True
                 with st.spinner("Analyzing your voice query..."):
-                    processed_audio = ensure_wav_format(st.session_state.audio_bytes)
                     result = process_voice_query(
-                        processed_audio,
+                        st.session_state.audio_bytes,
                         st.session_state["GEMINI_API_KEY"],
                         st.session_state["ELEVENLABS_API_KEY"],
                         st.session_state["ELEVENLABS_VOICE_ID"]
